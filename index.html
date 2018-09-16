@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #id1 {
+            margin: 0 auto;
+            width: 480px;
+        }
+		#timer{
+			width: 420px;
+			height: 21px;
+			border: 2px solid black;
+			text-align: center;
+			margin:0 auto;
+		}
+
+
+
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-route.js"></script>
+ 
+</head>
+<body ng-app="myApp" ng-controller="myCtrl">
+        <div ng-view></div>
+		   <script>
+var app = angular.module("myApp", ["ngRoute"]);
+
+app.config(function($routeProvider) {
+    $routeProvider
+	.when("/", {
+        templateUrl : "main.htm",
+		controller :"myCtrl"
+    })
+    .when("/30", {
+        templateUrl : "game.html",
+		controller :"myCtrl"
+    })
+    .when("/60", {
+        templateUrl : "game.html",
+		controller :"myCtrl"
+    })
+    .when("/90", {
+        templateUrl : "game.html",
+		controller :"myCtrl"
+    });
+});
+app.controller("myCtrl", function($scope,$location,$interval) {
+	//zmienne
+    $scope.x = ["0.jpg","0.jpg","0.jpg","0.jpg","0.jpg","0.jpg","0.jpg","0.jpg","0.jpg","0.jpg","0.jpg","0.jpg","0.jpg","0.jpg","0.jpg","0.jpg"];
+	$scope.xx =["1.jpg","1.jpg","2.jpg","2.jpg","3.jpg","3.jpg","4.jpg","4.jpg","5.jpg","5.jpg","6.jpg","6.jpg","7.jpg","7.jpg","8.jpg","8.jpg"];
+	shuffle($scope.xx);
+	//console.log($scope.xx);
+	var wich_click =0;
+	var photo_back;
+	var when = 0;
+	var older ;
+	var start;
+	var promise;
+
+	var right_time;
+	var is_started =false;
+	var win =0;
+	///budowa planszy
+
+	$scope.check = function(index){console.log($scope.xx);}
+	$scope.klik = function(index){
+	//console.log($scope.xx);
+	if(is_started ==false){
+	$scope.start();
+	is_started =true;
+	}
+	if(when != 1 && index !=older && $scope.x[index] == "0.jpg"){
+	older = index;
+	//console.log(index);
+		if(wich_click == 2){
+			photo_back="";
+			wich_click =0;
+		}
+			if(wich_click == 0){
+				$scope.x[index]=$scope.xx[index];
+				wich_click++;
+				photo_back=index;
+			
+			}else if(wich_click == 1){
+				$scope.x[index]=$scope.xx[index];
+				win++;
+			console.log($scope.x);
+				setTimeout(function(){
+					if($scope.xx[photo_back]!=$scope.xx[index]){
+					$scope.x[photo_back]="0.jpg";
+					$scope.x[index]="0.jpg";
+					win--;
+					}
+					when =0;
+				}, 500);
+			when =1;
+			wich_click ++;
+			if(win == 8){
+				$interval.cancel(promise);
+				$scope.text ="you win";
+			}
+			}
+	//console.log(wich_click);
+	//console.log(when);
+	}
+	}
+    ///timer
+				$scope.timerColor
+			    $scope.start = function(){
+						var location = $location.path();
+						location = location.replace('/','');
+						$scope.time = new Date();
+						$scope.timex = $scope.time.getTime();
+						//console.log($scope.time.getTime());
+						switch(location){
+							case "30":
+								$scope.time.setMinutes($scope.time.getMinutes()+0);
+								$scope.time.setSeconds($scope.time.getSeconds()+30	);
+							break;
+							case "60":
+								$scope.time.setMinutes($scope.time.getMinutes()+1);
+								$scope.time.setSeconds($scope.time.getSeconds()+0);
+							break;
+							case "90":
+								$scope.time.setMinutes($scope.time.getMinutes()+1);
+								$scope.time.setSeconds($scope.time.getSeconds()+30);
+							}
+						$scope.time.getTime();
+						$scope.dis =$scope.time -$scope.timex;
+						var sm =$scope.time.getMinutes();
+						var ss =$scope.time.getSeconds();
+						var sms =$scope.time.getMilliseconds();
+						$scope.timerColor="#44FF0E" ;
+						promise = $interval( function(){
+							
+							var data = new Date();
+							var dis2 = data.getTime();
+							$scope.ttt = $scope.time.getTime() -dis2;
+							var min =Math.floor($scope.ttt/60000);//data.getMinutes()-sm;//
+							var sec =Math.floor($scope.ttt%60000);//data.getSeconds()-ss;//
+							var milisec =Math.floor($scope.ttt%1000);//data.getMilliseconds()-sms;//
+							sec = Math.floor((sec-milisec)/1000);
+							//console.log(min);
+							//console.log(sm);
+							//console.log(sec);
+							//console.log(ss);
+							//console.log(milisec);
+							//console.log(sms);
+							
+								min = min < 10 ? "0" + min : min;
+								sec = sec < 10 ? "0" + sec : sec;
+								milisec = milisec < 10 ? "00" + milisec : milisec;
+								milisec = milisec < 100 ? "0" + milisec : milisec;
+							//console.log(Math.floor(($scope.time * 500)/($scope.timex * 1000)));
+							$scope.timex  = $scope.time.getTime() - dis2;
+							$scope.lng =$scope.ttt/$scope.dis;
+							//console.log($scope.lng);
+							if($scope.lng < 0.3){$scope.timerColor= "#FF0000" ;}
+								$scope.right_time =min+":"+sec+":"+milisec;
+								console.log($location.path());
+								if ($scope.timex <= 0)
+								{
+									$interval.cancel(promise);
+									min ="00";
+									milisec = "000";
+									$scope.right_time =min+":"+sec+":"+milisec;
+									$scope.text =("you lost");
+									console.log($location.path());
+									$location.path("/");
+
+								}
+								/*
+								min = min < 10 ? "0" + min : min;
+								sec = sec < 10 ? "0" + sec : sec;
+								milisec = milisec < 10 ? "00" + milisec : milisec;
+								milisec = milisec < 100 ? "0" + milisec : milisec;
+								milisec = milisec < 1 ? "000" + milisec : milisec;
+								if ($scope.time <= 0)
+								{
+									$interval.cancel(promise);
+									milisec = "000";
+									$scope.right_time =min+":"+sec+":"+milisec;
+									$scope.text =("you lost");
+
+								}
+								*/
+						},1)
+				}
+				$scope.$on('$destroy', function(){
+					$interval.cancel(promise);
+				});
+				
+		});
+		app.directive('myTimer', function() {
+		  return {
+		    templateUrl: "timer.html"
+		  };
+		});
+app.directive('myCustomer', function() {
+  return {
+    templateUrl: 'game2.html'
+  };
+});
+///////////////////////funkcje///////////////////////
+
+
+
+function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+}
+    </script>
+</body>
+</html>
